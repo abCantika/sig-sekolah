@@ -1,0 +1,11 @@
+﻿{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "web": {
+      "type": "web",
+      "framework": "other",
+      "routePrefix": "/",
+      "entrypoint": "Dockerfile.vercel"
+    }
+  }
+}
