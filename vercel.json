@@ -3,7 +3,7 @@
   "services": {
     "web": {
       "root": ".",
-      "framework": "other",
+      "framework": "docker",
       "entrypoint": "Dockerfile.vercel"
     }
   }
