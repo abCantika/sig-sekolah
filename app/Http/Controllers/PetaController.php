@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sekolah;
 use Illuminate\Http\Request;
 use App\Support\Geometri; 
+use Illuminate\Support\Facades\Cache;
 
 class PetaController extends Controller
 {
@@ -28,36 +29,40 @@ class PetaController extends Controller
         return view('peta.panas');
     }
     public function geojson(Request $request)
-    {
-        $features = Sekolah::with('profil')
-            ->when($request->jenjang, fn ($q, $j) => $q->where('jenjang', $j))
-            ->get()
-            ->map(fn ($s) => [
-                'type' => 'Feature',
-                'geometry' => [
-                    'type' => 'Point',
-                    'coordinates' => [$s->longitude, $s->latitude],
-                ],
-                'properties' => [
-                    'npsn'           => $s->npsn,
-                    'nama'           => $s->nama,
-                    'jenjang'        => $s->jenjang,
-                    'status'         => $s->status,
-                    'alamat'         => $s->alamat,
-                    'kecamatan'      => $s->kecamatan,
-                    'telepon'        => $s->telepon,
-                    'kepala_sekolah' => $s->profil?->kepala_sekolah,
-                    'akreditasi'     => $s->profil?->akreditasi,
-                    'jumlah_siswa'   => $s->profil?->jumlah_siswa,
-                    'jumlah_guru'    => $s->profil?->jumlah_guru,
-                ],
-            ]);
+{
+        $cacheKey = 'geojson_sekolah_' . ($request->jenjang ?: 'semua');
 
-        return response()->json([
-            'type'     => 'FeatureCollection',
-            'features' => $features,
-        ]);
-    }
+        $features = Cache::remember($cacheKey, 300, function () use ($request) {
+            return Sekolah::with('profil')
+                ->when($request->jenjang, fn ($q, $j) => $q->where('jenjang', $j))
+                ->get()
+                ->map(fn ($s) => [
+                    'type' => 'Feature',
+                    'geometry' => [
+                        'type' => 'Point',
+                        'coordinates' => [$s->longitude, $s->latitude],
+                    ],
+                    'properties' => [
+                        'npsn'           => $s->npsn,
+                        'nama'           => $s->nama,
+                        'jenjang'        => $s->jenjang,
+                        'status'         => $s->status,
+                        'alamat'         => $s->alamat,
+                        'kecamatan'      => $s->kecamatan,
+                        'telepon'        => $s->telepon,
+                        'kepala_sekolah' => $s->profil?->kepala_sekolah,
+                        'akreditasi'     => $s->profil?->akreditasi,
+                        'jumlah_siswa'   => $s->profil?->jumlah_siswa,
+                        'jumlah_guru'    => $s->profil?->jumlah_guru,
+                    ],
+                ]);
+        });
+
+    return response()->json([
+        'type'     => 'FeatureCollection',
+        'features' => $features,
+    ]);
+}
 
     public function wilayah()
 {

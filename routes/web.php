@@ -8,6 +8,7 @@ use App\Http\Controllers\PetaController;
 use App\Http\Controllers\SekolahController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PasswordController;
+use Illuminate\Support\Facades\DB;
 
 // Admin: kelola pengguna
 Route::middleware('role:admin')->prefix('admin')->name('admin.')
@@ -63,3 +64,22 @@ Route::middleware('auth')->group(function () {
         Route::put('sekolah/{sekolah}/profil', [ProfilSekolahController::class, 'update'])->name('sekolah.profil.update');
 });
     });
+
+    Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+
+        return response()->json([
+            'status'    => 'healthy',
+            'app'       => config('app.name'),
+            'database'  => DB::connection()->getDatabaseName(),
+            'driver'    => DB::connection()->getDriverName(),
+            'timestamp' => now()->toDateTimeString(),
+        ], 200);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'unhealthy',
+            'error'  => 'Database connection failed',
+        ], 500);
+    }
+});

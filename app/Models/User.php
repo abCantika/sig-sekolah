@@ -36,6 +36,14 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if ($user->email) {
+                $user->email = strtolower(trim($user->email));
+            }
+        });
+    }
     public function sekolah(): BelongsTo
     {
         return $this->belongsTo(Sekolah::class);
