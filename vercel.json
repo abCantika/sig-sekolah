@@ -3,7 +3,6 @@
   "services": {
     "web": {
       "framework": "other",
-      "routePrefix": "/",
       "entrypoint": "Dockerfile.vercel"
     }
   }
