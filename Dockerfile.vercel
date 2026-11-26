@@ -28,7 +28,7 @@ RUN composer install \
     --prefer-dist
 
 COPY . .
-RUN rm -rf bootstrap/cache/*.php \
+RUN rm -rf bootstrap/cache/*.php public/hot \
     && mkdir -p \
         storage/framework/cache \
         storage/framework/sessions \
